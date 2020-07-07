@@ -1,3 +1,5 @@
+const bodyParser = require('body-parser')
+// const axios = require('axios')
 
 export default {
   /*
@@ -171,5 +173,21 @@ export default {
    * applying middleware to all routes
    */
   middleware: 'log'
-  }
+  },
+
+  // middleware here will be executed from Top to Bottom
+  serverMiddleware: [
+      // this will parse incoming JSON body and add to the "body" field on the incoming req object
+      bodyParser.json(),
+      '~/api'  // shortcut for '~/api/index.js'
+  ],
+
+  // generate: { // this will generate a "STATIC routes"
+  //   routes: function() {
+
+  //     return [
+  //       '/posts/'
+  //     ]
+  //   }
+  // }
 }

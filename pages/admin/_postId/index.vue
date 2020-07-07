@@ -17,7 +17,7 @@ export default {
   },
 
   async asyncData (context) {
-    console.log('context', context.params.postId)
+    // console.log('context', context.params.postId)
 
     try {
       const data = await context.$axios.$get('https://nuxt-blog-b4ca4.firebaseio.com/posts/' + context.params.postId + '.json')
@@ -29,7 +29,8 @@ export default {
         }
       }
     } catch (err) {
-      console.log('err: ', err)
+      // console.log('err: ', err)
+      throw new Error('Error: ', err)
     }
   },
 

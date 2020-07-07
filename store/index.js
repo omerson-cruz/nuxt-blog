@@ -84,7 +84,10 @@ export const actions = {
 
         vuexContext.commit('addPost', { ...createdPost, id: result.data.name })
       })
-      .catch(err => console.log('err: ', err))
+      .catch((err) => {
+        // console.log('err: ', err)
+        throw new Error('err: ', err)
+      })
   },
   editPost (vuexContext, editedPost) {
     return this.$axios.put('https://nuxt-blog-b4ca4.firebaseio.com/posts/' +
@@ -95,15 +98,18 @@ export const actions = {
       updatedDate: new Date()
     })
       .then((result) => {
-        console.log(result)
+        // console.log(result)
         vuexContext.commit('editPost', editedPost)
       })
-      .catch(err => console.log('err: ', err))
+      .catch((err) => {
+        // console.log('err: ', err)
+        throw new Error('error: ', err)
+      })
   },
   // For signing Up and signing In
   authenticateUser (vuexContext, authData) {
-    console.log('submit: ', authData.email)
-    console.log('submit: ', authData.password)
+    // console.log('submit: ', authData.email)
+    // console.log('submit: ', authData.password)
 
     // authUl for Sign-in mode
     let authUrl = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + process.env.fbAPIKey
@@ -113,7 +119,7 @@ export const actions = {
       authUrl = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + process.env.fbAPIKey
     }
 
-    console.log('authUrl: ', authUrl)
+    // console.log('authUrl: ', authUrl)
 
     // we will return "AXIOS promise to the component so that
     // the component can then route to another page
@@ -124,7 +130,7 @@ export const actions = {
       returnSecureToken: true
     })
       .then((result) => {
-        console.log('index store result: ', result)
+        // console.log('index store result: ', result)
         vuexContext.commit('setToken', result.idToken)
         localStorage.setItem('token', result.idToken) // for page refresh
 
@@ -136,7 +142,7 @@ export const actions = {
           new Date().getTime() + Number.parseInt(result.expiresIn) * 1000
         )
 
-        console.log('setting the cookies')
+        // console.log('setting the cookies')
         // Now let's also store this token and expirationDate in Cookies also
         Cookie.set('jwt', result.idToken)
         Cookie.set('expirationDate',
@@ -145,11 +151,16 @@ export const actions = {
 
         // removing 'setLogoutTImer" no Longer needed
         // vuexContext.dispatch('setLogoutTimer', result.expiresIn)
+
+        this.$axios.$post('http://localhost:3000/api/track-data', {
+          data: 'Authenticated user already'
+        })
+
         return result
       })
       .catch((err) => {
-        console.log('store error: ', err)
-        throw new Error('error here at the store')
+        // console.log('store error: ', err)
+        throw new Error('error here at the store', err)
       })
   },
   // check for TOken in the local storage upon "refresh"
@@ -160,7 +171,7 @@ export const actions = {
     let expirationDate
 
     if (req) { // if token and expiration date source is the COOKIE
-      console.log('initAuth: ', req.headers.cookie)
+      // console.log('initAuth: ', req.headers.cookie)
       if (!req.headers.cookie) { // if there is no COOKIE header that is SET
         return
       }
@@ -176,7 +187,7 @@ export const actions = {
       // otherwise
       token = jwtCookie.split('=')[1] //= => this would be the token we stored
 
-      console.log('initAuth: token, ', token)
+      // console.log('initAuth: token, ', token)
 
       expirationDate = req.headers.cookie
         .split(';')
@@ -197,16 +208,18 @@ export const actions = {
       // actually checks if the token is already expired. so below we'll just
       // commit the clearing of the token
       vuexContext.commit('clearToken')
+      vuexContext.dispatch('logout')
 
       return
     }
 
-    console.log('getting the cookies: ', token)
+    // console.log('getting the cookies: ', token)
+
     // let's start the logoutTimer wiht the remaining time fromt the expirationDate
     // vuexContext.dispatch('setLogoutTimer', +expirationDate - new Date().getTime())
     // let's set the token if there's any
     vuexContext.commit('setToken', token)
-  }
+  },
 
   // setting the LogOUT TImer
   // WOnt work here anymore as per Max
@@ -215,6 +228,21 @@ export const actions = {
   //     vuexContext.commit('clearToken')
   //   }, duration)
   // }
+
+  logout (vuexContext) {
+    vuexContext.commit('clearToken')
+
+    // clearing the cookies and the localStorage
+    Cookie.remove('jwt')
+    Cookie.remove('expiration')
+
+    // If running on the client Browser
+    if (process.client) { // or can be "if (localStorage) "
+      localStorage.removeItem('token')
+      localStorage.removeItem('tokenExpiration')
+    }
+  }
+
 }
 
 export const getters = {

@@ -38,7 +38,8 @@ export default {
         }
       }
     } catch (err) {
-      console.log('err: ', err)
+      // console.log('err: ', err)
+      throw new Error('error: ', err)
     }
   },
 

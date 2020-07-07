@@ -51,11 +51,12 @@ export default {
       })
         .then((result) => { // here we receive the Axios Promise and
         // wait for it before Redirecting to home page
-          console.log('index vue: result: ', result)
+          // console.log('index vue: result: ', result)
           this.$router.push('/admin')
         })
         .catch((err) => {
-          console.log('index vue: error: ', err)
+          // console.log('index vue: error: ', err)
+          throw new Error('error: ', err)
         })
     }
   }
